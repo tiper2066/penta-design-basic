@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
   Briefcase,
@@ -15,6 +15,8 @@ import {
   Menu,
   ShieldUser,
   Settings,
+  ExternalLink,
+  Gauge,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -45,10 +47,23 @@ interface SidebarProps {
 
 function SidebarContent({ className, onLinkClick }: SidebarProps) {
   const pathname = usePathname();
-  // Open all by default or manage state
-  const [openCategories, setOpenCategories] = useState<string[]>(['WORK', 'SOURCE', 'TEMPLATE', 'BROCHURE', 'ADMIN']);
+  const searchParams = useSearchParams();
+  // 최초 접속시 모두 열기 또는 관리 상태
+  const [openCategories, setOpenCategories] = useState<string[]>(['WORK', 'SOURCE', 'TEMPLATE', 'BROCHURE', 'Etc.', 'ADMIN']);
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  const isItemActive = (href: string) => {
+    if (href.startsWith('http')) return false;
+    const [hrefPath, hrefQuery] = href.split('?');
+    if (pathname !== hrefPath) return false;
+    if (!hrefQuery) return true;
+    const targetParams = new URLSearchParams(hrefQuery);
+    for (const [key, value] of targetParams.entries()) {
+      if (searchParams.get(key) !== value) return false;
+    }
+    return true;
+  };
 
   const toggleCategory = (title: string) => {
     setOpenCategories(prev =>
@@ -107,16 +122,17 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
       ]
     },
     {
-      title: 'CODE GENERATOR',
+      title: 'Etc.',
       icon: Code,
       items: [
-        { title: 'eDM', href: '/code-generator' }
+        // { title: 'eDM', href: '/code-generator' }
+        { title: 'eDM', href: 'https://img-edm-code-generator.vercel.app/' }
       ]
     },
   ];
 
   return (
-    <div className={cn("pb-0 h-full bg-sidebar text-sidebar-foreground flex flex-col", className)}>
+    <div className={cn("pb-0 h-full bg-sidebar dark:bg-background text-sidebar-foreground flex flex-col", className)}>
       {/* Header Logo */}
       <div className="px-6 py-6 h-16 flex items-center shrink-0">
         <Link href="/" className="flex items-center">
@@ -150,16 +166,16 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
                 {group.items.map((item) => (
                   <Button
                     key={item.href}
-                    variant={pathname === item.href || (pathname === '/work' && item.href === '/work') ? "secondary" : "ghost"}
+                    variant={isItemActive(item.href) ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
                       "w-full justify-start h-9 font-normal text-muted-foreground",
-                      (pathname === item.href) && "bg-sidebar-accent text-penta-indigo font-medium"
+                      isItemActive(item.href) && "bg-sidebar-accent text-penta-indigo font-medium"
                     )}
                     asChild
                   >
-                    <Link href={item.href} onClick={handleLinkClick}>
-                      {item.title}
+                    <Link href={item.href} onClick={handleLinkClick} target={ item.href.includes("http") ? "_blank" : "_self" } className='group items-center gap-2 w-full'>
+                      <span className='truncate'>{item.title}</span> { item.href.includes("http") && <ExternalLink className="ml-auto opacity-0 transition-opacity group-hover:opacity-100" /> }
                     </Link>
                   </Button>
                 ))}
@@ -182,6 +198,20 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-1">
                   <Button
+                    variant={pathname === '/admin/usage' ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "w-full justify-start h-9 font-normal text-muted-foreground",
+                      pathname === '/admin/usage' && "bg-sidebar-accent text-penta-indigo font-medium"
+                    )}
+                    asChild
+                  >
+                    <Link href="/admin/usage" onClick={handleLinkClick}>
+                      <Gauge className="mr-2 h-4 w-4" />
+                      대시보드
+                    </Link>
+                  </Button>
+                  <Button
                     variant={pathname === '/admin/users' ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
@@ -193,6 +223,20 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
                     <Link href="/admin/users" onClick={handleLinkClick}>
                       <ShieldUser className="mr-2 h-4 w-4" />
                       사용자 관리
+                    </Link>
+                  </Button>
+                  <Button
+                    variant={pathname === '/admin/notices' ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                      "w-full justify-start h-9 font-normal text-muted-foreground",
+                      pathname === '/admin/notices' && "bg-sidebar-accent text-penta-indigo font-medium"
+                    )}
+                    asChild
+                  >
+                    <Link href="/admin/notices" onClick={handleLinkClick}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      공지사항 관리
                     </Link>
                   </Button>
                 </CollapsibleContent>

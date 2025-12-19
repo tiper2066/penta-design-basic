@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,9 +42,21 @@ interface WorkItem {
     category: string;
     description: string;
     images?: string[]; // Array of URLs
+    imageNames?: string[]; // Original filenames
+    attachments?: { id?: string; url: string; filename: string; size: number }[];
     uploadedBy: string;
     date: string; // Formatted date string
 }
+
+const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
 
 export default function WorkPage() {
     const { data: session } = useSession();
@@ -64,6 +77,8 @@ export default function WorkPage() {
                     category: w.category,
                     description: w.description,
                     images: w.images || [],
+                    imageNames: w.imageNames || [],
+                    attachments: w.attachments || [],
                     uploadedBy: w.uploadedBy,
                     date: new Date(w.createdAt).toLocaleDateString('ko-KR', {
                         year: 'numeric',
@@ -71,8 +86,9 @@ export default function WorkPage() {
                         day: '2-digit'
                     }).replace(/\. /g, '.').substring(0, 10)
                 }));
-                // Set only database works
-                setWorks(formattedWorks);
+                // Set only database works (exclude WALLPAPER)
+                const filteredWorks = formattedWorks.filter((w: any) => w.category !== 'WALLPAPER');
+                setWorks(filteredWorks);
             }
         } catch (error) {
             console.error("Failed to fetch works", error);
@@ -84,6 +100,16 @@ export default function WorkPage() {
     useEffect(() => {
         fetchWorks();
     }, []);
+
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const id = searchParams.get('id');
+        if (id && works.length > 0) {
+            const found = works.find(w => w.id === id);
+            if (found) setSelectedItem(found);
+        }
+    }, [searchParams, works]);
 
     const handleNext = () => {
         if (!selectedItem) return;
@@ -104,6 +130,23 @@ export default function WorkPage() {
             return item.images[0];
         }
         return null;
+    };
+
+    const handleDownload = async (url: string, filename: string) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch {
+            window.open(url, '_blank');
+        }
     };
 
     const handleEdit = (item: WorkItem) => {
@@ -146,7 +189,7 @@ export default function WorkPage() {
                 </div>
                 {/* Only show Upload button to ADMIN users */}
                 {session?.user && (session.user as any).role === 'ADMIN' && (
-                    <WorkUploadDialog onSuccess={fetchWorks} />
+                    <WorkUploadDialog onSuccess={fetchWorks} uploadPath="works" />
                 )}
             </div>
 
@@ -158,7 +201,7 @@ export default function WorkPage() {
                         관리자가 첫 번째 디자인 작업물을 업로드해보세요.
                     </p>
                     {isAdmin && (
-                        <WorkUploadDialog onSuccess={fetchWorks} />
+                        <WorkUploadDialog onSuccess={fetchWorks} uploadPath="works" />
                     )}
                 </div>
             ) : (
@@ -190,7 +233,7 @@ export default function WorkPage() {
                                 {/* Hover Overlay */}
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button variant="secondary" size="sm" className="pointer-events-none">
-                                        View Detail
+                                        상세보기
                                     </Button>
                                 </div>
                             </div>
@@ -272,7 +315,7 @@ export default function WorkPage() {
                             </button>
 
                             {/* Actual Content Card */}
-                            <div className="pointer-events-auto relative w-full h-full md:w-[1200px] md:h-[90vh] flex flex-col md:flex-row bg-background md:rounded-lg shadow-2xl overflow-hidden">
+                            <div className="pointer-events-auto relative w-full h-full md:w-[1400px] md:h-[90vh] flex flex-col md:flex-row bg-background md:rounded-lg shadow-2xl overflow-hidden">
                                 {/* Close Button */}
                                 <button
                                     onClick={() => setSelectedItem(null)}
@@ -340,26 +383,51 @@ export default function WorkPage() {
                                                 <Download className="h-4 w-4" /> Downloads
                                             </h3>
 
-                                            {selectedItem.images?.map((_, idx) => (
-                                                <div key={idx} className="border rounded-lg p-3 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                                                    <div className="flex items-center gap-3 overflow-hidden">
-                                                        <div className="h-9 w-9 bg-neutral-100 dark:bg-neutral-800 rounded flex items-center justify-center shrink-0">
-                                                            <span className="text-[10px] font-bold">IMG</span>
+                                            {selectedItem.attachments && selectedItem.attachments.length > 0 ? (
+                                                selectedItem.attachments.map((a, idx) => (
+                                                    <Button
+                                                        key={a.id ?? idx}
+                                                        variant="outline"
+                                                        className="w-full justify-start h-auto py-3"
+                                                        onClick={() => handleDownload(a.url, a.filename || `Attachment_${idx + 1}`)}
+                                                    >
+                                                        <Download className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                        <div className="flex items-center gap-3 overflow-hidden w-full">
+                                                            <div className="h-9 w-9 bg-neutral-100 dark:bg-neutral-800 rounded flex items-center justify-center shrink-0">
+                                                                <span className="text-[10px] font-bold">IMG</span>
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-sm font-medium truncate">{a.filename || `Attachment_${idx + 1}`} ({formatBytes(a.size || 0)})</p>
+                                                            </div>
                                                         </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-sm font-medium truncate">Image_{idx + 1}.png</p>
-                                                            <p className="text-xs text-muted-foreground">Original</p>
-                                                        </div>
-                                                    </div>
-                                                    <Button variant="ghost" size="icon" asChild>
-                                                        <a href={selectedItem.images?.[idx]} download target="_blank" rel="noopener noreferrer">
-                                                            <Download className="h-4 w-4" />
-                                                        </a>
                                                     </Button>
-                                                </div>
-                                            ))}
+                                                ))
+                                            ) : (
+                                                selectedItem.images?.map((imgUrl, idx) => {
+                                                    const name = selectedItem.imageNames?.[idx] || (imgUrl.split('?')[0].split('/').pop() || `Image_${idx + 1}.png`);
+                                                    return (
+                                                        <Button
+                                                            key={idx}
+                                                            variant="outline"
+                                                            className="w-full justify-start h-auto py-3"
+                                                            onClick={() => handleDownload(imgUrl, name)}
+                                                        >
+                                                            <Download className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                            <div className="flex items-center gap-3 overflow-hidden w-full">
+                                                                <div className="h-9 w-9 bg-neutral-100 dark:bg-neutral-800 rounded flex items-center justify-center shrink-0">
+                                                                    <span className="text-[10px] font-bold">IMG</span>
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-sm font-medium truncate">{name}</p>
+                                                                    <p className="text-xs text-muted-foreground">Original</p>
+                                                                </div>
+                                                            </div>
+                                                        </Button>
+                                                    );
+                                                })
+                                            )}
 
-                                            {!selectedItem.images?.length && (
+                                            {!selectedItem.images?.length && !selectedItem.attachments?.length && (
                                                 <p className="text-sm text-muted-foreground italic">No downloadable files.</p>
                                             )}
                                         </div>
@@ -367,7 +435,12 @@ export default function WorkPage() {
 
                                     {/* Action Footer */}
                                     <div className="p-6 border-t bg-muted/20 space-y-3">
-                                        <Button className="w-full" size="lg">
+                                        <Button className="w-full" size="lg" onClick={() => {
+                                            selectedItem?.images?.forEach((imgUrl, idx) => {
+                                                const name = selectedItem?.imageNames?.[idx] || (imgUrl.split('?')[0].split('/').pop() || `Image_${idx + 1}.png`);
+                                                handleDownload(imgUrl, name);
+                                            });
+                                        }}>
                                             Download All Assets
                                         </Button>
                                         
@@ -415,6 +488,7 @@ export default function WorkPage() {
                     fetchWorks();
                     setEditingItem(null);
                 }}
+                uploadPath="works"
             />
         </div>
     );

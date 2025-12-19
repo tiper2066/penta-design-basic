@@ -21,7 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Shield, User, Calendar, Mail, Loader2 } from "lucide-react";
+import { Shield, ShieldUser, User, Calendar, Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserData {
@@ -106,8 +106,8 @@ export default function AdminUsersPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                        <Shield className="h-8 w-8" />
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+                        <ShieldUser className="h-8 w-8 text-muted-foreground" />
                         사용자 관리
                     </h1>
                     <p className="text-muted-foreground">
@@ -120,7 +120,8 @@ export default function AdminUsersPage() {
                 <CardHeader>
                     <CardTitle>전체 사용자 목록</CardTitle>
                     <CardDescription>
-                        총 {users.length}명의 사용자가 등록되어 있습니다.
+                        총 <strong className="text-penta-indigo">{users.length}</strong> 명의 사용자가 등록되어 있습니다. 
+                        권한 변경은 선택 즉시 반영됩니다.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -131,7 +132,7 @@ export default function AdminUsersPage() {
                                 <TableHead>이메일</TableHead>
                                 <TableHead>역할</TableHead>
                                 <TableHead>가입일</TableHead>
-                                <TableHead className="text-right">작업</TableHead>
+                                <TableHead>권한</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

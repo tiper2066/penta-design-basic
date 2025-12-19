@@ -71,13 +71,14 @@ model Post {
   id          String   @id @default(cuid())
   title       String
   description String?
-  fileUrl     String?  // Link to Supabase Storage
+  fileUrl     String?  // legacy single attachment
   thumbnailUrl String?
   categoryId  Int
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   authorId    String?
+  attachments NoticeAttachment[]
 }
 
 model Work {
@@ -86,7 +87,36 @@ model Work {
   category    String
   description String
   images      String[]
+  imageNames  String[]
   uploadedBy  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  attachments WorkAttachment[]
+}
+
+model WorkAttachment {
+  id        String   @id @default(cuid())
+  url       String
+  filename  String
+  size      Int
+  workId    String
+  work      Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workId, url])
+}
+
+model NoticeAttachment {
+  id        String   @id @default(cuid())
+  url       String
+  filename  String
+  size      Int      // 파일 크기 (바이트)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([postId, url])
 }

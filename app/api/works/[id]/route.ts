@@ -61,7 +61,7 @@ export async function PUT(
         }
 
         const body = await request.json();
-        const { title, category, description, images, imagesToDelete } = body;
+        const { title, category, description, images, imageNames = [], imagesToDelete } = body;
         
         console.log('PUT request data:', {
             id,
@@ -109,6 +109,7 @@ export async function PUT(
                 category,
                 description,
                 images,
+                imageNames,
             },
         });
 

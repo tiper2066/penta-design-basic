@@ -15,6 +15,7 @@ export const config = {
         "/template/:path*",
         "/brochure/:path*",
         "/code-generator/:path*",
+        "/admin/:path*",
         // Add other protected paths as needed
     ],
 }

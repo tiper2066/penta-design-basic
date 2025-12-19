@@ -50,7 +50,7 @@ export function ThemeToggle() {
             <span className="sr-only">테마 변경</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent align="end">
           <p>{theme === 'dark' ? '라이트 모드로 변경' : '다크 모드로 변경'}</p>
         </TooltipContent>
       </Tooltip>

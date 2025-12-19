@@ -22,6 +22,7 @@ interface WorkItem {
     category: string;
     description: string;
     images?: string[];
+    imageNames?: string[];
     uploadedBy: string;
     date: string;
 }
@@ -31,15 +32,17 @@ interface WorkEditDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSuccess: () => void;
+    uploadPath?: string;
 }
 
-export function WorkEditDialog({ work, open, onOpenChange, onSuccess }: WorkEditDialogProps) {
+export function WorkEditDialog({ work, open, onOpenChange, onSuccess, uploadPath = 'works' }: WorkEditDialogProps) {
     const { data: session } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
     const [existingImages, setExistingImages] = useState<string[]>([]);
+    const [existingImageNames, setExistingImageNames] = useState<string[]>([]);
     const [newImages, setNewImages] = useState<File[]>([]);
     const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,6 +54,7 @@ export function WorkEditDialog({ work, open, onOpenChange, onSuccess }: WorkEdit
             setCategory(work.category);
             setDescription(work.description);
             setExistingImages(work.images || []);
+            setExistingImageNames(work.imageNames || []);
             setNewImages([]);
             setImagesToDelete([]);
         }
@@ -65,6 +69,8 @@ export function WorkEditDialog({ work, open, onOpenChange, onSuccess }: WorkEdit
 
     const removeExistingImage = (imageUrl: string) => {
         setExistingImages(prev => prev.filter(img => img !== imageUrl));
+        const idx = existingImages.findIndex(img => img === imageUrl);
+        setExistingImageNames(prev => prev.filter((_, i) => i !== idx));
         setImagesToDelete(prev => [...prev, imageUrl]);
     };
 
@@ -81,7 +87,7 @@ export function WorkEditDialog({ work, open, onOpenChange, onSuccess }: WorkEdit
             try {
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const filePath = `works/${fileName}`;
+                const filePath = `${uploadPath}/${fileName}`;
 
                 const { error } = await supabase.storage
                     .from('work-images')
@@ -114,6 +120,7 @@ export function WorkEditDialog({ work, open, onOpenChange, onSuccess }: WorkEdit
 
             // Combine existing images (not deleted) with new images
             const allImages = [...existingImages, ...newImageUrls];
+            const allImageNames = [...existingImageNames, ...newImages.map(f => f.name)];
 
             const response = await fetch(`/api/works/${work.id}`, {
                 method: 'PUT',
@@ -123,6 +130,7 @@ export function WorkEditDialog({ work, open, onOpenChange, onSuccess }: WorkEdit
                     category,
                     description,
                     images: allImages,
+                    imageNames: allImageNames,
                     imagesToDelete,
                 }),
             });

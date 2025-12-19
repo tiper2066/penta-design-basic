@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -116,6 +116,8 @@ export function WorkUploadDialog({
                     category: category || 'General',
                     description,
                     images: imageUrls,
+                    imageNames: selectedFiles.map(f => f.name),
+                    attachments: imageUrls.map((url, idx) => ({ url, filename: selectedFiles[idx].name, size: selectedFiles[idx].size })),
                     uploadedBy: session.user.name || 'Unknown',
                 }),
             });
@@ -147,7 +149,7 @@ export function WorkUploadDialog({
             <DialogTrigger asChild>
                 {trigger || (
                     <Button>
-                        <Upload className="mr-2 h-4 w-4" /> Upload New
+                        <Plus className="h-4 w-4" /> 게시물 추가
                     </Button>
                 )}
             </DialogTrigger>
