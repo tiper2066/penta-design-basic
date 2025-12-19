@@ -16,7 +16,8 @@ import {
     Info,
     ImageIcon,
     Edit,
-    Trash2
+    Trash2,
+    Loader2
 } from "lucide-react";
 import {
     Dialog,
@@ -193,7 +194,11 @@ export default function WorkPage() {
                 )}
             </div>
 
-            {works.length === 0 && !isLoading ? (
+            {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : works.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                     <ImageIcon className="h-16 w-16 mb-4 opacity-20 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">아직 업로드된 게시물이 없습니다</h3>
@@ -214,7 +219,6 @@ export default function WorkPage() {
                             className="py-0 gap-3 overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-transparent hover:border-sidebar-primary/20 flex flex-col max-w-[320px]"
                             onClick={() => setSelectedItem(item)}
                         >
-                            {/* Image Area - Dynamic Height */}
                             <div className="bg-muted flex items-center justify-center relative overflow-hidden">
                                 {previewImg ? (
                                     <img
@@ -229,16 +233,12 @@ export default function WorkPage() {
                                         <span className="font-medium text-xs">No Image</span>
                                     </div>
                                 )}
-
-                                {/* Hover Overlay */}
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <Button variant="secondary" size="sm" className="pointer-events-none">
                                         상세보기
                                     </Button>
                                 </div>
                             </div>
-                            
-                            {/* Fixed Height Info Area */}
                             <CardHeader className="p-4 h-auto flex-shrink-0">
                                 <div className="flex justify-between items-start gap-2">
                                     <div className="min-w-0">

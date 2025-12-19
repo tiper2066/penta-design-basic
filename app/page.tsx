@@ -217,7 +217,7 @@ export default function Home() {
       {/* Recent Updates Area Mockup */}
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         <Card className="py-0 pb-3 gap-3">
-          <div className="p-4 border-b min-h-[65px] flex items-center">
+          <div className="pt-4 pb-4 pl-6 pr-6 border-b min-h-[65px] flex items-center">
             <h3 className="font-semibold">최근 게시물</h3>
           </div>
           <CardContent className="p-6">
@@ -234,9 +234,9 @@ export default function Home() {
                       <div className="min-w-[95px]">
                         <Badge variant="secondary" className={badgeClass}>{badgeText}</Badge>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{w.title}</p>
+                      <div className="flex items-center gap-2">
                         <p className="text-xs text-muted-foreground">{dateStr}</p>
+                        <p className="text-sm font-medium">{w.title}</p>
                       </div>
                     </div>
                     <Link href={href} onClick={(e) => handleLinkClick(e, href)}>
@@ -253,7 +253,7 @@ export default function Home() {
         </Card>
 
         <Card className="py-0 pb-3 gap-3">
-          <div className="p-4 border-b flex items-center justify-between">
+          <div className="pt-4 pb-4 pl-6 pr-6 border-b min-h-[65px] flex items-center justify-between">
             <h3 className="font-semibold">공지 사항</h3>
             {/* 관리자용 공지 추가 버튼 (숨김) */}
           </div>
@@ -271,14 +271,14 @@ export default function Home() {
                     .substring(0, 10);
                   return (
                     <li key={n.id} className="flex items-center justify-between">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex items-center gap-2">
+                      <p className="text-xs text-muted-foreground">{dateStr}</p>
                       <p className="text-sm font-medium truncate cursor-pointer" onClick={() => { setSelectedNotice(n); setIsDetailOpen(true); }}>
                         {n.title}
                         {isNew && (
                           <Badge variant="secondary" className="ml-2 bg-penta-blue/10 text-penta-blue border-transparent">NEW</Badge>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">{dateStr}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {(n.attachments?.length || 0) > 0 || n.fileUrl ? (

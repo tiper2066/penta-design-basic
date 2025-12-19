@@ -29,6 +29,7 @@ interface WorkItem {
     category: string;
     description: string;
     images?: string[];
+    imageNames?: string[];
     uploadedBy: string;
     date: string;
 }
@@ -45,6 +46,7 @@ export default function TemplatePage() {
     const [selectedItem, setSelectedItem] = useState<WorkItem | null>(null);
     const [editingItem, setEditingItem] = useState<WorkItem | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
     // Existing hardcoded templates
     const templates = [
@@ -300,7 +302,8 @@ export default function TemplatePage() {
                                                         <img
                                                             src={img}
                                                             alt={`${selectedItem.title} - ${idx + 1}`}
-                                                            className="w-full h-full object-cover shadow-lg"
+                                                            className="w-full h-full object-cover shadow-lg cursor-zoom-in"
+                                                            onClick={() => setZoomSrc(img)}
                                                         />
                                                     </div>
                                                 ))
@@ -310,11 +313,11 @@ export default function TemplatePage() {
                                                     <span>No Image Available</span>
                                                 </div>
                                             )}
-                                        </div>
                                     </div>
+                                </div>
 
-                                    {/* Right: Info Area */}
-                                    <div className="h-[60vh] md:h-full md:w-[30%] flex flex-col bg-background border-l relative">
+                                {/* Right: Info Area */}
+                                <div className="h-[60vh] md:h-full md:w-[30%] flex flex-col bg-background border-l relative">
                                         <button
                                             onClick={() => setSelectedItem(null)}
                                             className="absolute top-4 right-4 z-50 p-2 hover:bg-muted rounded-full transition-colors hidden md:block"
@@ -366,7 +369,7 @@ export default function TemplatePage() {
                                                 <div className="p-6 border-t bg-muted/20 space-y-3">
                                                     <Button className="w-full" size="lg" onClick={() => {
                                                         selectedItem?.images?.forEach((img, idx) => {
-                                                            const name = (img.split('?')[0].split('/').pop() || `image_${idx + 1}.png`);
+                                                            const name = selectedItem?.imageNames?.[idx] || (img.split('?')[0].split('/').pop() || `image_${idx + 1}.png`);
                                                             handleDownload(img, name);
                                                         });
                                                     }}>
@@ -405,6 +408,26 @@ export default function TemplatePage() {
                                     </div>
                                 </div>
                             </>
+                        )}
+                        {zoomSrc && (
+                            <div
+                                className="pointer-events-auto fixed inset-0 z-[1000] bg-black/95 flex items-center justify-center"
+                                role="dialog"
+                                aria-modal="true"
+                            >
+                                <button
+                                    aria-label="Close zoom"
+                                    className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                                    onClick={() => setZoomSrc(null)}
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                                <img
+                                    src={zoomSrc}
+                                    alt="Zoomed"
+                                    className="max-w-[95vw] max-h-[95vh] object-contain"
+                                />
+                            </div>
                         )}
                     </DialogContent>
                 </Dialog>
