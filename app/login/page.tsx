@@ -49,9 +49,9 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
             <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-300">
-                <CardHeader className="space-y-1 text-center items-center">
-                    <CardTitle className="text-2xl font-bold">Penta Design System</CardTitle>
-                    <CardDescription>Enter your credentials to access the platform</CardDescription>
+                <CardHeader className="space-y-2 text-center items-center">
+                    <CardTitle className="text-2xl font-bold py-4">Penta Design System Login</CardTitle>
+                    <CardDescription>로그인하고 펜타시큐리티 디자인 자산을 마음껏 사용하세요.</CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
@@ -64,7 +64,7 @@ export default function LoginPage() {
                                 <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
                             </svg>
                         )}
-                        Continue with Google
+                        Google 계정으로 로그인
                     </Button>
 
                     <div className="relative">
@@ -72,7 +72,7 @@ export default function LoginPage() {
                             <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                            <span className="bg-background px-2 text-muted-foreground">또는 Email/PW</span>
                         </div>
                     </div>
 
@@ -89,7 +89,7 @@ export default function LoginPage() {
                                 disabled={isLoading}
                             />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 pb-3">
                             <label htmlFor="password" className="text-sm font-medium">Password</label>
                             <Input
                                 id="password"
@@ -104,16 +104,17 @@ export default function LoginPage() {
                         {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Sign In
+                            로그인
                         </Button>
                     </form>
                 </CardContent>
                 <CardFooter className="justify-center">
                     <div className="text-sm text-muted-foreground">
-                        Don&apos;t have an account?{" "}
+                        아직 계정이 없다면{" "}
                         <Link href="/register" className="underline underline-offset-4 hover:text-primary">
-                            Sign up
+                            회원가입
                         </Link>
+                        {" "}하세요.
                     </div>
                 </CardFooter>
             </Card>

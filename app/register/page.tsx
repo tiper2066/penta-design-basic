@@ -100,14 +100,11 @@ export default function RegisterPage() {
         <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
             <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-300">
                 <CardHeader className="space-y-1 text-center items-center">
-                    {/* <div className="p-3 bg-primary/10 rounded-full mb-2">
-                        <Globe className="h-8 w-8 text-primary" />
-                    </div> */}
-                    <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-                    <CardDescription>Enter your email below to create your account</CardDescription>
+                    <CardTitle className="text-2xl font-bold py-4">Membership of the P.D.S</CardTitle>
+                    <CardDescription>Email / Password 로 계정을 만드세요.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleRegister}>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 pb-6">
                         <div className="space-y-2">
                             <label htmlFor="name" className="text-sm font-medium">Full Name</label>
                             <Input
@@ -164,13 +161,14 @@ export default function RegisterPage() {
                     <CardFooter className="flex flex-col gap-4">
                         <Button type="submit" className="w-full" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Create account
+                            회원가입
                         </Button>
                         <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{" "}
+                            이미 계정이 있다면{" "}
                             <Link href="/login" className="underline underline-offset-4 hover:text-primary">
-                                Sign in
+                                로그인
                             </Link>
+                            {" "}하세요.
                         </div>
                     </CardFooter>
                 </form>
