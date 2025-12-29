@@ -144,7 +144,7 @@ export default function Home() {
     <div className="space-y-8">
       {/* Welcome Section */}
       <section className="space-y-4">
-        <h1 className="tracking-tight flex flex-col items-start w-auto">
+        <h1 className="tracking-tight flex justify-start items-end w-auto gap-2">
           {/* {session?.user?.name ? `${session.user.name} 님 환영합니다.` : "Penta Design Assets Management System"} */}
           <Image
             src="/img/site_logo.svg"
@@ -154,7 +154,7 @@ export default function Home() {
             className="h-[30px] w-auto"
             priority
           />
-          <p className="text-lg font-regular ">Brand & Design Resources</p>
+          <p className="text-lg font-reqular mb-[-6px]">Brand & Design Resources</p>
         </h1>
         <p className="text-muted-foreground w-full">
           펜타시큐리티 디자인 자산 관리 시스템에 오신 것을 환영합니다.

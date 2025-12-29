@@ -70,7 +70,7 @@ export function Header({ className }: HeaderProps) {
     };
 
     return (
-        <header className="fixed top-0 right-0 left-0 md:left-56 z-30 flex h-16 items-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pl-[80px] pr-6 justify-between border-b">
+        <header className="fixed top-0 right-0 left-0 md:left-56 z-30 flex h-16 items-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pl-[80px] pr-6 justify-between">
             {/* Left side */}
             <div className="flex items-center">
             </div>
