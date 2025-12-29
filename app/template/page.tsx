@@ -18,6 +18,7 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import Image from 'next/image';
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,10 @@ export default function TemplatePage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
     // Existing hardcoded templates
     const templates = [
         { id: 1, title: 'Corporate PPT 2025', type: 'PPT' },
@@ -56,13 +61,17 @@ export default function TemplatePage() {
         { id: 4, title: 'Email Signature', type: 'HTML' },
     ];
 
-    const fetchWallpapers = async () => {
+    const fetchWallpapers = async (page = 1) => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/works?category=WALLPAPER');
+            const response = await fetch(`/api/works?category=WALLPAPER&page=${page}&limit=10`);
             if (response.ok) {
                 const data = await response.json();
-                const formatted = data.map((w: any) => ({
+                // API now returns { items: [], total, ... }
+                const dbWorks = data.items || [];
+                setTotalPages(data.totalPages || 1);
+
+                const formatted = dbWorks.map((w: any) => ({
                     id: w.id,
                     title: w.title,
                     category: w.category,
@@ -87,9 +96,9 @@ export default function TemplatePage() {
 
     useEffect(() => {
         if (type === 'wallpaper') {
-            fetchWallpapers();
+            fetchWallpapers(currentPage);
         }
-    }, [type]);
+    }, [type, currentPage]);
 
     useEffect(() => {
         if (type === 'wallpaper') {
@@ -168,7 +177,7 @@ export default function TemplatePage() {
                             }
                             initialCategory="WALLPAPER"
                             uploadPath="wallpaper"
-                            onSuccess={fetchWallpapers}
+                            onSuccess={() => fetchWallpapers(currentPage)}
                         />
                     )}
                 </div>
@@ -188,7 +197,7 @@ export default function TemplatePage() {
                                     trigger={<Button><Plus className="h-4 w-4" /> 게시물 추가</Button>}
                                     initialCategory="WALLPAPER"
                                     uploadPath="wallpaper"
-                                    onSuccess={fetchWallpapers}
+                                    onSuccess={() => fetchWallpapers(currentPage)}
                                 />
                             )}
                         </div>
@@ -202,6 +211,7 @@ export default function TemplatePage() {
                                                 src={item.images[0]}
                                                 alt={item.title}
                                                 fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                                                 className="object-cover transition-transform group-hover:scale-105"
                                             />
                                         ) : (
@@ -253,16 +263,42 @@ export default function TemplatePage() {
                     )
                 )}
 
+                {/* Pagination Controls */}
+                {wallpapers.length > 0 && totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            이전
+                        </Button>
+                        <span className="text-sm font-medium">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            다음
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                    </div>
+                )}
+
                 {/* Detail Dialog */}
                 <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
                     <DialogContent
                         className="!fixed !top-0 !left-0 !translate-x-0 !translate-y-0 !max-w-none !w-full !h-full bg-transparent shadow-none border-none p-0 flex items-center justify-center pointer-events-none"
-                        aria-describedby="dialog-description"
                     >
                         <DialogTitle className="sr-only">{selectedItem?.title}</DialogTitle>
-                        <div id="dialog-description" className="sr-only">
+                        <DialogDescription className="sr-only">
                             {selectedItem?.description || "Image details and download options"}
-                        </div>
+                        </DialogDescription>
 
                         {selectedItem && (
                             <>
@@ -313,11 +349,11 @@ export default function TemplatePage() {
                                                     <span>No Image Available</span>
                                                 </div>
                                             )}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Right: Info Area */}
-                                <div className="h-[60vh] md:h-full md:w-[30%] flex flex-col bg-background border-l relative">
+                                    {/* Right: Info Area */}
+                                    <div className="h-[60vh] md:h-full md:w-[30%] flex flex-col bg-background border-l relative">
                                         <button
                                             onClick={() => setSelectedItem(null)}
                                             className="absolute top-4 right-4 z-50 p-2 hover:bg-muted rounded-full transition-colors hidden md:block"
@@ -377,8 +413,8 @@ export default function TemplatePage() {
                                                     </Button>
                                                     {isAdmin && (
                                                         <div className="flex gap-2">
-                                                            <Button 
-                                                                variant="outline" 
+                                                            <Button
+                                                                variant="outline"
                                                                 className="flex-1"
                                                                 onClick={() => {
                                                                     setSelectedItem(null);
@@ -389,8 +425,8 @@ export default function TemplatePage() {
                                                                 <Edit className="mr-2 h-4 w-4" />
                                                                 수정
                                                             </Button>
-                                                            <Button 
-                                                                variant="destructive" 
+                                                            <Button
+                                                                variant="destructive"
                                                                 className="flex-1"
                                                                 onClick={() => {
                                                                     setSelectedItem(null);
@@ -439,7 +475,7 @@ export default function TemplatePage() {
                     onOpenChange={setIsEditDialogOpen}
                     uploadPath="wallpaper"
                     onSuccess={() => {
-                        fetchWallpapers();
+                        fetchWallpapers(currentPage);
                         setEditingItem(null);
                     }}
                 />

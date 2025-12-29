@@ -23,6 +23,7 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import {
     DropdownMenu,
@@ -67,11 +68,20 @@ export default function WorkPage() {
     const [editingItem, setEditingItem] = useState<WorkItem | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-    const fetchWorks = async () => {
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const fetchWorks = async (page = 1) => {
+        setIsLoading(true);
         try {
-            const response = await fetch('/api/works');
+            // Exclude WALLPAPER from this list as they are shown in Template page
+            const response = await fetch(`/api/works?excludeCategory=WALLPAPER&page=${page}&limit=10`);
             if (response.ok) {
-                const dbWorks = await response.json();
+                const data = await response.json();
+                const dbWorks = data.items || [];
+                setTotalPages(data.totalPages || 1);
+
                 const formattedWorks = dbWorks.map((w: any) => ({
                     id: w.id,
                     title: w.title,
@@ -87,9 +97,8 @@ export default function WorkPage() {
                         day: '2-digit'
                     }).replace(/\. /g, '.').substring(0, 10)
                 }));
-                // Set only database works (exclude WALLPAPER)
-                const filteredWorks = formattedWorks.filter((w: any) => w.category !== 'WALLPAPER');
-                setWorks(filteredWorks);
+                // Client-side filtering is no longer needed as API handles it
+                setWorks(formattedWorks);
             }
         } catch (error) {
             console.error("Failed to fetch works", error);
@@ -99,8 +108,8 @@ export default function WorkPage() {
     };
 
     useEffect(() => {
-        fetchWorks();
-    }, []);
+        fetchWorks(currentPage);
+    }, [currentPage]);
 
     const searchParams = useSearchParams();
 
@@ -190,7 +199,7 @@ export default function WorkPage() {
                 </div>
                 {/* Only show Upload button to ADMIN users */}
                 {session?.user && (session.user as any).role === 'ADMIN' && (
-                    <WorkUploadDialog onSuccess={fetchWorks} uploadPath="works" />
+                    <WorkUploadDialog onSuccess={() => fetchWorks(currentPage)} uploadPath="works" />
                 )}
             </div>
 
@@ -206,81 +215,108 @@ export default function WorkPage() {
                         관리자가 첫 번째 디자인 작업물을 업로드해보세요.
                     </p>
                     {isAdmin && (
-                        <WorkUploadDialog onSuccess={fetchWorks} uploadPath="works" />
+                        <WorkUploadDialog onSuccess={() => fetchWorks(currentPage)} uploadPath="works" />
                     )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-6 sm:gap-3 items-start" style={{ gridAutoRows: 'max-content' }}>
                     {works.map((item) => {
-                    const previewImg = getPreviewImage(item);
-                    return (
-                        <Card
-                            key={item.id}
-                            className="py-0 gap-3 overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-transparent hover:border-sidebar-primary/20 flex flex-col max-w-[320px]"
-                            onClick={() => setSelectedItem(item)}
-                        >
-                            <div className="bg-muted flex items-center justify-center relative overflow-hidden">
-                                {previewImg ? (
-                                    <img
-                                        src={previewImg}
-                                        alt={item.title}
-                                        className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
-                                        style={{ maxHeight: '400px' }}
-                                    />
-                                ) : (
-                                    <div className="w-full h-48 flex flex-col items-center justify-center text-muted-foreground">
-                                        <ImageIcon className="h-8 w-8 mb-2 opacity-20" />
-                                        <span className="font-medium text-xs">No Image</span>
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button variant="secondary" size="sm" className="pointer-events-none">
-                                        상세보기
-                                    </Button>
-                                </div>
-                            </div>
-                            <CardHeader className="p-4 h-auto flex-shrink-0">
-                                <div className="flex justify-between items-start gap-2">
-                                    <div className="min-w-0">
-                                        <CardTitle className="text-base font-semibold">
-                                            {item.title && item.title.length > 18 ? `${item.title.slice(0, 18)}...` : item.title || 'Title'}
-                                        </CardTitle>
-                                        <p className="text-xs text-muted-foreground mt-1">{item.date}</p>
-                                    </div>
-                                    {isAdmin ? (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" onClick={(e) => { e.stopPropagation(); }}>
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem 
-                                                    onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
-                                                >
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    수정
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem 
-                                                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                                                    className="text-red-600 dark:text-red-400"
-                                                >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    삭제
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                        const previewImg = getPreviewImage(item);
+                        return (
+                            <Card
+                                key={item.id}
+                                className="py-0 gap-3 overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-transparent hover:border-sidebar-primary/20 flex flex-col max-w-[320px]"
+                                onClick={() => setSelectedItem(item)}
+                            >
+                                <div className="bg-muted flex items-center justify-center relative overflow-hidden">
+                                    {previewImg ? (
+                                        <img
+                                            src={previewImg}
+                                            alt={item.title}
+                                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                                            style={{ maxHeight: '400px' }}
+                                        />
                                     ) : (
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" onClick={(e) => { e.stopPropagation(); }}>
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
+                                        <div className="w-full h-48 flex flex-col items-center justify-center text-muted-foreground">
+                                            <ImageIcon className="h-8 w-8 mb-2 opacity-20" />
+                                            <span className="font-medium text-xs">No Image</span>
+                                        </div>
                                     )}
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <Button variant="secondary" size="sm" className="pointer-events-none">
+                                            상세보기
+                                        </Button>
+                                    </div>
                                 </div>
-                            </CardHeader>
-                        </Card>
-                    );
+                                <CardHeader className="p-4 h-auto flex-shrink-0">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <div className="min-w-0">
+                                            <CardTitle className="text-base font-semibold">
+                                                {item.title && item.title.length > 18 ? `${item.title.slice(0, 18)}...` : item.title || 'Title'}
+                                            </CardTitle>
+                                            <p className="text-xs text-muted-foreground mt-1">{item.date}</p>
+                                        </div>
+                                        {isAdmin ? (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" onClick={(e) => { e.stopPropagation(); }}>
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
+                                                    >
+                                                        <Edit className="mr-2 h-4 w-4" />
+                                                        수정
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                                                        className="text-red-600 dark:text-red-400"
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        삭제
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        ) : (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2" onClick={(e) => { e.stopPropagation(); }}>
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        );
                     })}
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {works.length > 0 && totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        이전
+                    </Button>
+                    <span className="text-sm font-medium">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        다음
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
                 </div>
             )}
 
@@ -294,6 +330,9 @@ export default function WorkPage() {
                     <DialogTitle className="sr-only">
                         {selectedItem?.title} Detail View
                     </DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Detailed view of the selected work item
+                    </DialogDescription>
 
                     {selectedItem && (
                         <>
@@ -443,12 +482,12 @@ export default function WorkPage() {
                                         }}>
                                             Download All Assets
                                         </Button>
-                                        
+
                                         {/* Admin Actions */}
                                         {isAdmin && (
                                             <div className="flex gap-2">
-                                                <Button 
-                                                    variant="outline" 
+                                                <Button
+                                                    variant="outline"
                                                     className="flex-1"
                                                     onClick={() => {
                                                         setSelectedItem(null);
@@ -458,8 +497,8 @@ export default function WorkPage() {
                                                     <Edit className="mr-2 h-4 w-4" />
                                                     수정
                                                 </Button>
-                                                <Button 
-                                                    variant="destructive" 
+                                                <Button
+                                                    variant="destructive"
                                                     className="flex-1"
                                                     onClick={() => {
                                                         setSelectedItem(null);

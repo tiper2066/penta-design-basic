@@ -137,8 +137,8 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
       <div className="px-6 py-6 h-16 flex items-center shrink-0">
         <Link href="/" className="flex items-center">
           <Image
-            src="/img/ci_logo.svg"
-            alt="Penta Security"
+            src="/img/site_logo.svg"
+            alt="Layerary logo"
             width={160}
             height={40}
             className="h-[18px] w-auto"
@@ -174,8 +174,8 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
                     )}
                     asChild
                   >
-                    <Link href={item.href} onClick={handleLinkClick} target={ item.href.includes("http") ? "_blank" : "_self" } className='group items-center gap-2 w-full'>
-                      <span className='truncate'>{item.title}</span> { item.href.includes("http") && <ExternalLink className="ml-auto opacity-0 transition-opacity group-hover:opacity-100" /> }
+                    <Link href={item.href} onClick={handleLinkClick} target={item.href.includes("http") ? "_blank" : "_self"} className='group items-center gap-2 w-full'>
+                      <span className='truncate'>{item.title}</span> {item.href.includes("http") && <ExternalLink className="ml-auto opacity-0 transition-opacity group-hover:opacity-100" />}
                     </Link>
                   </Button>
                 ))}
@@ -260,8 +260,8 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
                     </Avatar>
                     <div className="flex flex-col min-w-0 flex-1">
                       <p className="text-sm font-medium leading-none truncate">
-                        {session.user.name && session.user.name.length > 6 
-                          ? `${session.user.name.slice(0, 6)}...` 
+                        {session.user.name && session.user.name.length > 6
+                          ? `${session.user.name.slice(0, 6)}...`
                           : session.user.name || 'User'}
                       </p>
                     </div>

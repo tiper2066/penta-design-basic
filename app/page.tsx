@@ -12,6 +12,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { supabase } from '@/lib/supabase';
 import { useEffect, useState } from "react";
+import Image from 'next/image';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -39,12 +40,13 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/works');
+        const res = await fetch('/api/works?limit=3');
         if (res.ok) {
           const data = await res.json();
-          setRecentWorks(data.slice(0, 3));
+          // The API now returns { items: Work[], total, page, totalPages }
+          setRecentWorks(data.items || []);
         }
-      } catch {}
+      } catch { }
     };
     load();
   }, []);
@@ -142,8 +144,17 @@ export default function Home() {
     <div className="space-y-8">
       {/* Welcome Section */}
       <section className="space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {session?.user?.name ? `${session.user.name} 님 환영합니다.` : "Penta Design Assets Management System"}
+        <h1 className="tracking-tight flex flex-col items-start w-auto">
+          {/* {session?.user?.name ? `${session.user.name} 님 환영합니다.` : "Penta Design Assets Management System"} */}
+          <Image
+            src="/img/site_logo.svg"
+            alt="Layerary logo"
+            width={160}
+            height={40}
+            className="h-[30px] w-auto"
+            priority
+          />
+          <p className="text-lg font-regular ">Brand & Design Resources</p>
         </h1>
         <p className="text-muted-foreground w-full">
           펜타시큐리티 디자인 자산 관리 시스템에 오신 것을 환영합니다.
@@ -271,22 +282,22 @@ export default function Home() {
                     .substring(0, 10);
                   return (
                     <li key={n.id} className="flex items-center justify-between">
-                    <div className="min-w-0 flex items-center gap-2">
-                      <p className="text-xs text-muted-foreground">{dateStr}</p>
-                      <p className="text-sm font-medium truncate cursor-pointer" onClick={() => { setSelectedNotice(n); setIsDetailOpen(true); }}>
-                        {n.title}
-                        {isNew && (
-                          <Badge variant="secondary" className="ml-2 bg-penta-blue/10 text-penta-blue border-transparent">NEW</Badge>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {(n.attachments?.length || 0) > 0 || n.fileUrl ? (
-                        <Paperclip className="h-4 w-4 text-muted-foreground" />
-                      ) : null}
-                      {/* 관리자용 수정/삭제 메뉴 (숨김) */}
-                    </div>
-                  </li>
+                      <div className="min-w-0 flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground">{dateStr}</p>
+                        <p className="text-sm font-medium truncate cursor-pointer" onClick={() => { setSelectedNotice(n); setIsDetailOpen(true); }}>
+                          {n.title}
+                          {isNew && (
+                            <Badge variant="secondary" className="ml-2 bg-penta-blue/10 text-penta-blue border-transparent">NEW</Badge>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {(n.attachments?.length || 0) > 0 || n.fileUrl ? (
+                          <Paperclip className="h-4 w-4 text-muted-foreground" />
+                        ) : null}
+                        {/* 관리자용 수정/삭제 메뉴 (숨김) */}
+                      </div>
+                    </li>
                   );
                 })}
                 {notices.length === 0 && (
@@ -420,6 +431,20 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Layerary 소개 문구  */}
+      <section className="space-y-4">
+        <h1 className="text-xl font-semibold">
+          LAYERARY 란?
+        </h1>
+        <p className="text-muted-foreground w-full tracking-tight">
+          LAYERARY는 펜타시큐리티의 브랜드와 디자인 기준, 그리고 이를 구성하는 것들을 하나의 체계로 관리하는 포털입니다. <br />
+          일관된 브랜드 경험을 위해 필요한 기준과 리소스를 정리하고 공유합니다.<br /><br />
+
+          LAYERARY is Penta Security’s official portal for managing brand and design standards and assets in one cohesive system.<br />
+          It provides clear guidance and resources to ensure a consistent brand experience.
+        </p>
+      </section>
     </div>
   );
 }

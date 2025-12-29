@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Upload, X, Image as ImageIcon, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -38,6 +39,14 @@ export function WorkUploadDialog({
     const [isLoading, setIsLoading] = useState(false);
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState(initialCategory);
+
+    // Reset category when dialog opens
+    useEffect(() => {
+        if (open) {
+            setCategory(initialCategory);
+        }
+    }, [open, initialCategory]);
+
     const [description, setDescription] = useState('');
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -129,7 +138,7 @@ export function WorkUploadDialog({
             // Reset and Close
             setOpen(false);
             setTitle('');
-            setCategory('');
+            setCategory(initialCategory);
             setDescription('');
             setSelectedFiles([]);
             setPreviewUrls([]);
@@ -156,6 +165,9 @@ export function WorkUploadDialog({
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Upload New Work</DialogTitle>
+                    <DialogDescription>
+                        Fill in the details for your new work item.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6 py-4">
                     <div className="space-y-2">
