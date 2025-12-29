@@ -77,13 +77,34 @@ export function WorkUploadDialog({
         const uploadedUrls: string[] = [];
 
         for (const file of selectedFiles) {
+            // Log original file info
+            console.log('=== Uploading File ===');
+            console.log('File name:', file.name);
+            console.log('File size:', file.size, 'bytes');
+            console.log('File type:', file.type);
+
+            // Check actual image dimensions before upload
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            await new Promise((resolve) => {
+                img.onload = () => {
+                    console.log('Original file dimensions:', img.naturalWidth, 'x', img.naturalHeight);
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(null);
+                };
+                img.src = objectUrl;
+            });
+
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `${uploadPath}/${fileName}`;
 
             const { data, error } = await supabase.storage
                 .from(bucketName)
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
 
             if (error) {
                 console.error('Error uploading image:', error);
@@ -93,6 +114,9 @@ export function WorkUploadDialog({
             const { data: { publicUrl } } = supabase.storage
                 .from(bucketName)
                 .getPublicUrl(filePath);
+
+            console.log('Uploaded to:', publicUrl);
+            console.log('=====================');
 
             uploadedUrls.push(publicUrl);
         }

@@ -8,16 +8,19 @@ import { cn } from "@/lib/utils";
 export function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isAuthPage = pathname === '/login' || pathname === '/register';
+    const isEditorPage = pathname?.startsWith('/editor');
+
+    const isFullScreen = isAuthPage || isEditorPage;
 
     return (
         <div className="flex min-h-screen">
-            {/* Sidebar - Hide on Auth Pages */}
-            {!isAuthPage && <Sidebar />}
+            {/* Sidebar - Hide on Auth/Editor Pages */}
+            {!isFullScreen && <Sidebar />}
 
-            {/* Main Content Area --- 로그인/회원가입 페이지가 아닐경우 상단 패딩적용 */}
-            <main className={cn("flex-1 min-h-screen", !isAuthPage && "pt-16 md:ml-56")}>
-                {!isAuthPage && <Header />}
-                <div className={cn("pr-8 pb-8 pl-8 max-w-[1600px] mx-auto", isAuthPage && "p-0 max-w-none")}>
+            {/* Main Content Area */}
+            <main className={cn("flex-1 min-h-screen", !isFullScreen && "pt-16 md:ml-56")}>
+                {!isFullScreen && <Header />}
+                <div className={cn("pr-8 pb-8 pl-8 max-w-[1600px] mx-auto", isFullScreen && "p-0 max-w-none")}>
                     {children}
                 </div>
             </main>

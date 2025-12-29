@@ -316,6 +316,21 @@ export default function SearchPage() {
 
                                     {/* Left: Image(s) Scroll Area */}
                                     <div className="h-[40vh] md:h-full md:w-[70%] bg-neutral-900 overflow-y-auto no-scrollbar flex items-center justify-center relative">
+                                        {/* Edit Button */}
+                                        <Button
+                                            size="sm"
+                                            className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white border-0 backdrop-blur-sm"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (selectedItem.images && selectedItem.images.length > 0) {
+                                                    router.push(`/editor/${selectedItem.id}?url=${encodeURIComponent(selectedItem.images[0])}&name=${encodeURIComponent(selectedItem.title)}`);
+                                                }
+                                            }}
+                                        >
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            편집하기
+                                        </Button>
+
                                         <div className="w-full h-full flex flex-col items-center justify-center p-0 gap-4">
                                             {selectedItem.images && selectedItem.images.length > 0 ? (
                                                 selectedItem.images.map((img, idx) => (

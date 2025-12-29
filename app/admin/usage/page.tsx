@@ -29,7 +29,19 @@ export default function AdminUsagePage() {
         const res = await fetch('/api/works');
         if (res.ok) {
           const data = await res.json();
-          setWorks(data);
+          // Safely handle if data is array or object with data property
+          if (Array.isArray(data)) {
+            setWorks(data);
+          } else if (data && Array.isArray(data.items)) {
+            setWorks(data.items);
+          } else if (data && Array.isArray(data.works)) {
+            setWorks(data.works);
+          } else {
+            console.warn("Unexpected API response format:", data);
+            setWorks([]);
+          }
+        } else {
+          setWorks([]);
         }
       } finally {
         setIsLoading(false);
@@ -75,7 +87,7 @@ export default function AdminUsagePage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             <Gauge className="h-8 w-8 text-muted-foreground" />
-            대시보드 
+            대시보드
           </h1>
           <p className="text-muted-foreground">게시물/이미지 집계와 외부 대시보드 바로가기를 확인하세요.</p>
         </div>
@@ -164,7 +176,7 @@ export default function AdminUsagePage() {
           {supabaseUrl && (
             <Button
               variant="ghost"
-              onClick={async () => { try { await navigator.clipboard.writeText(supabaseUrl); } catch (e) {} }}
+              onClick={async () => { try { await navigator.clipboard.writeText(supabaseUrl); } catch (e) { } }}
             >
               <LinkIcon className="mr-2 h-4 w-4" />
               Supabase Host 주소 복사
@@ -175,7 +187,7 @@ export default function AdminUsagePage() {
           Storage 버킷: <span className="font-mono">{bucketName}</span> • 폴더: <span className="font-mono">works/</span>, <span className="font-mono">wallpaper/</span>
         </p>
         <p className="text-xs text-muted-foreground">
-          Supabase Dashboard 는 해당 프로젝트의 Project Settings &gt; Billings &gt; Usage 에서 확인할 수 있다.<br /> 
+          Supabase Dashboard 는 해당 프로젝트의 Project Settings &gt; Billings &gt; Usage 에서 확인할 수 있다.<br />
           Supabase Host 주소는 Supabase API 요청을 위한 기본 주소 (NEXT_PUBLIC_SUPABASE_URL) 입니다. 필요 시 복사하여 설정에 사용하세요.
         </p>
       </div>
