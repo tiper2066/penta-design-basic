@@ -211,7 +211,16 @@ function DraggableCalendar({
     const days = generateCalendarDays();
     const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
 
-    const getDayColor = (dayIndex: number) => {
+    // 공휴일 정보 가져오기
+    const holidays = getKoreanHolidays(item.year, item.month);
+
+    const getDayColor = (dayIndex: number, day: number | null) => {
+        if (!day) return 'transparent';
+
+        // 공휴일 체크
+        const isHoliday = item.showHolidays && holidays.has(day);
+        if (isHoliday) return item.holidayColor;
+
         if (dayIndex === 0) return item.sundayColor; // 일요일
         if (dayIndex === 6) return item.saturdayColor; // 토요일
         return item.weekdayColor; // 평일
@@ -265,7 +274,7 @@ function DraggableCalendar({
                                     width: `${item.cellWidth}px`,
                                     height: `${item.cellHeight}px`,
                                     fontSize: `${item.fontSize * 0.8}px`,
-                                    color: getDayColor(index),
+                                    color: index === 0 ? item.sundayColor : (index === 6 ? item.saturdayColor : item.headerColor),
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -281,21 +290,38 @@ function DraggableCalendar({
                 <div className="grid grid-cols-7 gap-1">
                     {days.map((day, index) => {
                         const dayOfWeek = index % 7;
+                        const holidayName = (day && item.showHolidays) ? holidays.get(day) : null;
+
                         return (
                             <div
                                 key={index}
-                                className="text-center"
+                                className="text-center relative"
                                 style={{
                                     width: `${item.cellWidth}px`,
                                     height: `${item.cellHeight}px`,
                                     fontSize: `${item.fontSize}px`,
-                                    color: day ? getDayColor(dayOfWeek) : 'transparent',
+                                    color: getDayColor(dayOfWeek, day),
                                     display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}
                             >
-                                {day || ''}
+                                <span>{day || ''}</span>
+                                {holidayName && (
+                                    <span
+                                        style={{
+                                            fontSize: `${item.fontSize * 0.4}px`,
+                                            position: 'absolute',
+                                            bottom: '2px',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            maxWidth: '100%'
+                                        }}
+                                    >
+                                        {holidayName}
+                                    </span>
+                                )}
                             </div>
                         );
                     })}
@@ -943,6 +969,39 @@ export default function EditorPage({ params }: { params: { id: string } }) {
                                             )}
                                         />
                                     </button>
+                                </div>
+
+                                {/* Holiday Toggle & Color */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <Label>한국 공휴일</Label>
+                                        <button
+                                            onClick={() => updateCalendar(selectedCalendar.id, { showHolidays: !selectedCalendar.showHolidays })}
+                                            className={cn(
+                                                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                                                selectedCalendar.showHolidays ? "bg-blue-600" : "bg-neutral-600"
+                                            )}
+                                        >
+                                            <span
+                                                className={cn(
+                                                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                                                    selectedCalendar.showHolidays ? "translate-x-6" : "translate-x-1"
+                                                )}
+                                            />
+                                        </button>
+                                    </div>
+
+                                    {selectedCalendar.showHolidays && (
+                                        <div className="flex items-center justify-between pt-2">
+                                            <label className="text-xs text-neutral-400">공휴일 색상</label>
+                                            <input
+                                                type="color"
+                                                value={selectedCalendar.holidayColor}
+                                                onChange={(e) => updateCalendar(selectedCalendar.id, { holidayColor: e.target.value })}
+                                                className="w-16 h-6 p-0 border border-neutral-600 rounded overflow-hidden"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}
