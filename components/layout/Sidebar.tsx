@@ -17,6 +17,7 @@ import {
   Settings,
   ExternalLink,
   Gauge,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -235,7 +236,7 @@ function SidebarContent({ className, onLinkClick }: SidebarProps) {
                     asChild
                   >
                     <Link href="/admin/notices" onClick={handleLinkClick}>
-                      <FileText className="mr-2 h-4 w-4" />
+                      <Megaphone className="mr-2 h-4 w-4" />
                       공지사항 관리
                     </Link>
                   </Button>

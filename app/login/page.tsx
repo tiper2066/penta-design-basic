@@ -50,7 +50,7 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
             <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-300">
                 <CardHeader className="space-y-2 text-center items-center">
-                    <CardTitle className="text-2xl font-bold py-4">Penta Design System Login</CardTitle>
+                    <CardTitle className="text-2xl font-bold py-4">LAYERARY Login</CardTitle>
                     <CardDescription>로그인하고 펜타시큐리티 디자인 자산을 마음껏 사용하세요.</CardDescription>
                 </CardHeader>
 

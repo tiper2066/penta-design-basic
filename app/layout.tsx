@@ -4,7 +4,7 @@ import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "Penta Security Design Asset Management",
+  title: "LAYERARY - Design Asset Management System",
   description: "Design Asset Management System for Penta Security",
   icons: {
     icon: '/img/favicon.png', // public 폴더 안의 파일 경로

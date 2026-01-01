@@ -100,7 +100,7 @@ export default function RegisterPage() {
         <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
             <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-300">
                 <CardHeader className="space-y-1 text-center items-center">
-                    <CardTitle className="text-2xl font-bold py-4">Membership of the P.D.S</CardTitle>
+                    <CardTitle className="text-2xl font-bold py-4">Membership of LAYERARY</CardTitle>
                     <CardDescription>Email / Password 로 계정을 만드세요.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleRegister}>

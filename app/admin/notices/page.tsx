@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Edit, Trash2, Paperclip, MoreVertical, Download } from 'lucide-react';
+import { Edit, Trash2, Paperclip, MoreVertical, Download, Megaphone } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 // 파일 크기를 읽기 쉬운 형식으로 변환하는 유틸리티 함수
@@ -149,7 +149,12 @@ export default function AdminNoticesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">공지사항 관리</h1>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <Megaphone className='h-8 w-8 text-muted-foreground' /> 공지사항 관리
+          </h1>
+          <p className="text-muted-foreground">공지사항을 등록하고 관리합니다.</p>
+        </div>
         <Button onClick={openAdd}>공지 추가</Button>
       </div>
 

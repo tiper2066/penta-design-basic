@@ -151,14 +151,14 @@ export default function Home() {
             alt="Layerary logo"
             width={160}
             height={40}
-            className="h-[30px] w-auto"
+            className="h-[20px] w-auto"
             priority
           />
-          <p className="text-lg font-reqular mb-[-6px]">Brand & Design Resources</p>
+          <p className="text-sm font-reqular mb-[-6px]">Brand & Design Resources</p>
         </h1>
         <p className="text-muted-foreground w-full">
-          펜타시큐리티 디자인 자산 관리 시스템에 오신 것을 환영합니다.
-          필요한 모든 디자인 리소스와 템플릿을 이곳에서 관리하고 다운로드 받을 수 있습니다.
+          LAYERARY는 펜타시큐리티의 브랜드와 디자인 기준, 그리고 이를 구성하는 것들을 하나의 체계로 관리하는 포털입니다. 일관된 브랜드 경험을 위해 필요한 기준과 리소스를 정리하고 공유합니다.<br />
+          <span className="text-xs font-regular">LAYERARY is Penta Security’s official portal for managing brand and design standards and assets in one cohesive system. It provides clear guidance and resources to ensure a consistent brand experience.</span>
         </p>
       </section>
 
@@ -432,19 +432,6 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Layerary 소개 문구  */}
-      <section className="space-y-4">
-        <h1 className="text-xl font-semibold">
-          LAYERARY 란?
-        </h1>
-        <p className="text-muted-foreground w-full tracking-tight">
-          LAYERARY는 펜타시큐리티의 브랜드와 디자인 기준, 그리고 이를 구성하는 것들을 하나의 체계로 관리하는 포털입니다. <br />
-          일관된 브랜드 경험을 위해 필요한 기준과 리소스를 정리하고 공유합니다.<br /><br />
-
-          LAYERARY is Penta Security’s official portal for managing brand and design standards and assets in one cohesive system.<br />
-          It provides clear guidance and resources to ensure a consistent brand experience.
-        </p>
-      </section>
     </div>
   );
 }
