@@ -188,21 +188,38 @@ function DraggableCalendar({
         const daysInMonth = getDaysInMonth(firstDay);
         const startWeekday = getDay(firstDay); // 0 (일) ~ 6 (토)
 
-        const days: (number | null)[] = [];
+        const days: { day: number; isCurrentMonth: boolean; date: Date }[] = [];
 
-        // 앞쪽 빈 칸
-        for (let i = 0; i < startWeekday; i++) {
-            days.push(null);
+        // 앞쪽 빈 칸 채우기 (이전 달 날짜)
+        const prevMonth = new Date(item.year, item.month - 2, 1);
+        const daysInPrevMonth = getDaysInMonth(prevMonth);
+        for (let i = startWeekday - 1; i >= 0; i--) {
+            const day = daysInPrevMonth - i;
+            days.push({
+                day,
+                isCurrentMonth: false,
+                date: new Date(item.year, item.month - 2, day)
+            });
         }
 
-        // 실제 날짜
+        // 현재 달 날짜
         for (let i = 1; i <= daysInMonth; i++) {
-            days.push(i);
+            days.push({
+                day: i,
+                isCurrentMonth: true,
+                date: new Date(item.year, item.month - 1, i)
+            });
         }
 
-        // 뒤쪽 빈 칸 (6주 맞추기)
+        // 뒤쪽 빈 칸 채우기 (다음 달 날짜)
+        let nextDay = 1;
         while (days.length < 42) {
-            days.push(null);
+            days.push({
+                day: nextDay,
+                isCurrentMonth: false,
+                date: new Date(item.year, item.month, nextDay)
+            });
+            nextDay++;
         }
 
         return days;
@@ -214,9 +231,10 @@ function DraggableCalendar({
     // 공휴일 정보 가져오기
     const holidays = getKoreanHolidays(item.year, item.month);
 
-    const getDayColor = (dayIndex: number, day: number | null) => {
-        if (!day) return 'transparent';
+    const getDayColor = (dayIndex: number, dayInfo: { day: number; isCurrentMonth: boolean; date: Date }) => {
+        if (!dayInfo.isCurrentMonth) return 'rgba(255, 255, 255, 0.3)'; // 흐린 색
 
+        const day = dayInfo.day;
         // 공휴일 체크
         const isHoliday = item.showHolidays && holidays.has(day);
         if (isHoliday) return item.holidayColor;
@@ -249,7 +267,7 @@ function DraggableCalendar({
                     opacity: item.opacity,
                     fontFamily: item.fontFamily,
                     zIndex: selectedId === item.id ? 100 : 50,
-                    padding: '16px',
+                    padding: '24px',
                 }}
             >
                 {/* Header: Year & Month */}
@@ -288,9 +306,15 @@ function DraggableCalendar({
 
                 {/* Days Grid */}
                 <div className="grid grid-cols-7 gap-1">
-                    {days.map((day, index) => {
+                    {days.map((dayInfo, index) => {
                         const dayOfWeek = index % 7;
-                        const holidayName = (day && item.showHolidays) ? holidays.get(day) : null;
+                        const holidayName = (dayInfo.isCurrentMonth && item.showHolidays) ? holidays.get(dayInfo.day) : null;
+
+                        // 오늘 날짜 체크
+                        const today = new Date();
+                        const isToday = dayInfo.date.getFullYear() === today.getFullYear() &&
+                            dayInfo.date.getMonth() === today.getMonth() &&
+                            dayInfo.date.getDate() === today.getDate();
 
                         return (
                             <div
@@ -300,20 +324,32 @@ function DraggableCalendar({
                                     width: `${item.cellWidth}px`,
                                     height: `${item.cellHeight}px`,
                                     fontSize: `${item.fontSize}px`,
-                                    color: getDayColor(dayOfWeek, day),
+                                    color: isToday ? '#ffffff' : getDayColor(dayOfWeek, dayInfo),
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}
                             >
-                                <span>{day || ''}</span>
+                                {isToday && (
+                                    <div
+                                        className="absolute"
+                                        style={{
+                                            width: `${item.cellWidth * 0.9}px`,
+                                            height: `${item.cellWidth * 0.9}px`,
+                                            backgroundColor: '#ff4d4d',
+                                            borderRadius: '50%',
+                                            zIndex: -1
+                                        }}
+                                    />
+                                )}
+                                <span>{dayInfo.day}</span>
                                 {holidayName && (
                                     <span
                                         style={{
-                                            fontSize: `${item.fontSize * 0.4}px`,
+                                            fontSize: `${item.fontSize * 0.5}px`,
                                             position: 'absolute',
-                                            bottom: '2px',
+                                            bottom: '-4px',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             maxWidth: '100%'
@@ -452,8 +488,8 @@ export default function EditorPage({ params }: { params: { id: string } }) {
             fontFamily: 'Pretendard',
             headerColor: '#ffffff',
             weekdayColor: '#ffffff',
-            sundayColor: '#ff4444',
-            saturdayColor: '#4444ff',
+            sundayColor: '#ff4d4d',
+            saturdayColor: '#4d4dff',
             dayColor: '#ffffff',
             backgroundColor: '#000000',
             opacity: 1,
@@ -465,7 +501,7 @@ export default function EditorPage({ params }: { params: { id: string } }) {
 
             // 공휴일
             showHolidays: true,
-            holidayColor: '#ff4444',
+            holidayColor: '#ff4d4d',
         };
         setCalendars([...calendars, newCalendar]);
         setSelectedId(newCalendar.id);
@@ -553,7 +589,7 @@ export default function EditorPage({ params }: { params: { id: string } }) {
             {/* Left Sidebar - Tools */}
             <aside className="w-20 md:w-64 bg-neutral-800 border-r border-neutral-700 flex flex-col z-40 flex-none shrink-0">
                 <div className="p-4 border-b border-neutral-700">
-                    <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-neutral-400 hover:text-white pl-0">
+                    <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-neutral-400 hover:bg-transparent hover:text-white pl-0">
                         <ChevronLeft className="mr-2 h-4 w-4" />
                         <span className="hidden md:inline">나가기</span>
                     </Button>
@@ -580,7 +616,7 @@ export default function EditorPage({ params }: { params: { id: string } }) {
                     </Button>
                     <Button
                         variant="secondary"
-                        className="w-full justify-start h-12 bg-green-600/20 hover:bg-green-600/30"
+                        className="w-full justify-start h-12"
                         onClick={addCalendar}
                     >
                         <CalendarIcon className="mr-2 h-5 w-5" />
